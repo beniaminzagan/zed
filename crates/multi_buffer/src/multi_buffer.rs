@@ -319,6 +319,7 @@ pub struct RowInfo {
     pub buffer_row: Option<u32>,
     pub multibuffer_row: Option<MultiBufferRow>,
     pub diff_status: Option<git::diff::DiffHunkStatus>,
+    pub expand_direction: Option<(ExcerptId, ExpandExcerptDirection)>,
 }
 
 /// A slice into a [`Buffer`] that is being edited in a [`MultiBuffer`].
@@ -3475,6 +3476,11 @@ impl MultiBufferSnapshot {
                 diff_base_byte_range: hunk.diff_base_byte_range.clone(),
             })
         })
+    }
+
+    pub fn max_excerpt_buffer_row(&self, excerpt_id: ExcerptId) -> Option<u32> {
+        self.excerpt(excerpt_id)
+            .map(|excerpt| excerpt.max_buffer_row)
     }
 
     pub fn excerpt_ids_for_range<T: ToOffset>(
@@ -6971,6 +6977,7 @@ impl<'a> Iterator for MultiBufferRows<'a> {
                 buffer_row: Some(0),
                 multibuffer_row: Some(MultiBufferRow(0)),
                 diff_status: None,
+                expand_direction: None,
             });
         }
 
@@ -6999,6 +7006,7 @@ impl<'a> Iterator for MultiBufferRows<'a> {
                         buffer_row: Some(last_row),
                         multibuffer_row: Some(multibuffer_row),
                         diff_status: None,
+                        expand_direction: None,
                     });
                 } else {
                     return None;
@@ -7008,6 +7016,15 @@ impl<'a> Iterator for MultiBufferRows<'a> {
 
         let overshoot = self.point - region.range.start;
         let buffer_point = region.buffer_range.start + overshoot;
+        let expand_direction = if self.point.row == region.range.start.row && buffer_point.row > 0 {
+            Some(ExpandExcerptDirection::Up)
+        } else if self.point.row + 1 == region.range.end.row
+            && buffer_point.row < region.buffer.max_point().row
+        {
+            Some(ExpandExcerptDirection::Down)
+        } else {
+            None
+        };
         let result = Some(RowInfo {
             buffer_id: Some(region.buffer.remote_id()),
             buffer_row: Some(buffer_point.row),
@@ -7019,6 +7036,7 @@ impl<'a> Iterator for MultiBufferRows<'a> {
             } else {
                 None
             },
+            expand_direction: expand_direction.map(|dir| (region.excerpt.id, dir)),
         });
         self.point += Point::new(1, 0);
         result
