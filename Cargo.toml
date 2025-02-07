@@ -32,6 +32,7 @@ members = [
     "crates/db",
     "crates/deepseek",
     "crates/diagnostics",
+    "crates/diff",
     "crates/docs_preprocessor",
     "crates/editor",
     "crates/evals",
@@ -80,6 +81,7 @@ members = [
     "crates/markdown_preview",
     "crates/media",
     "crates/menu",
+    "crates/migrator",
     "crates/multi_buffer",
     "crates/node_runtime",
     "crates/notifications",
@@ -231,6 +233,7 @@ copilot = { path = "crates/copilot" }
 db = { path = "crates/db" }
 deepseek = { path = "crates/deepseek" }
 diagnostics = { path = "crates/diagnostics" }
+diff = { path = "crates/diff" }
 editor = { path = "crates/editor" }
 extension = { path = "crates/extension" }
 extension_host = { path = "crates/extension_host" }
@@ -277,6 +280,7 @@ markdown = { path = "crates/markdown" }
 markdown_preview = { path = "crates/markdown_preview" }
 media = { path = "crates/media" }
 menu = { path = "crates/menu" }
+migrator = { path = "crates/migrator" }
 multi_buffer = { path = "crates/multi_buffer" }
 node_runtime = { path = "crates/node_runtime" }
 notifications = { path = "crates/notifications" }

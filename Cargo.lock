@@ -2753,6 +2753,7 @@ dependencies = [
  "ctor",
  "dashmap 6.1.0",
  "derive_more",
+ "diff 0.1.0",
  "editor",
  "env_logger 0.11.6",
  "envy",
@@ -3839,6 +3840,24 @@ dependencies = [
 
 [[package]]
 name = "diff"
+version = "0.1.0"
+dependencies = [
+ "futures 0.3.31",
+ "git2",
+ "gpui",
+ "language",
+ "log",
+ "pretty_assertions",
+ "rope",
+ "serde_json",
+ "sum_tree",
+ "text",
+ "unindent",
+ "util",
+]
+
+[[package]]
+name = "diff"
 version = "0.1.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "56254986775e3233ffa9c4d7d3faaf6d36a2c09d30b20687e9f88bc8bafc16c8"
@@ -4007,6 +4026,7 @@ dependencies = [
  "convert_case 0.7.1",
  "ctor",
  "db",
+ "diff 0.1.0",
  "emojis",
  "env_logger 0.11.6",
  "file_icons",
@@ -5306,6 +5326,7 @@ dependencies = [
  "anyhow",
  "collections",
  "db",
+ "diff 0.1.0",
  "editor",
  "feature_flags",
  "futures 0.3.31",
@@ -6342,6 +6363,8 @@ dependencies = [
  "file_icons",
  "gpui",
  "project",
+ "schemars",
+ "serde",
  "settings",
  "theme",
  "ui",
@@ -7161,7 +7184,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fc2f4eb4bc735547cfed7c0a4922cbd04a4655978c09b54f1f7b228750664c34"
 dependencies = [
  "cfg-if",
- "windows-targets 0.52.6",
+ "windows-targets 0.48.5",
 ]
 
 [[package]]
@@ -7814,6 +7837,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "migrator"
+version = "0.1.0"
+dependencies = [
+ "collections",
+ "convert_case 0.7.1",
+ "pretty_assertions",
+ "tree-sitter",
+ "tree-sitter-json",
+]
+
+[[package]]
 name = "mimalloc"
 version = "0.1.43"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -7910,9 +7944,9 @@ dependencies = [
  "clock",
  "collections",
  "ctor",
+ "diff 0.1.0",
  "env_logger 0.11.6",
  "futures 0.3.31",
- "git",
  "gpui",
  "indoc",
  "itertools 0.14.0",
@@ -9919,7 +9953,7 @@ version = "1.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3ae130e2f271fbc2ac3a40fb1d07180839cdbbe443c7a27e1e3c13c5cac0116d"
 dependencies = [
- "diff",
+ "diff 0.1.13",
  "yansi",
 ]
 
@@ -10015,6 +10049,7 @@ dependencies = [
  "client",
  "clock",
  "collections",
+ "diff 0.1.0",
  "env_logger 0.11.6",
  "fancy-regex 0.14.0",
  "fs",
@@ -11956,6 +11991,7 @@ dependencies = [
  "gpui",
  "indoc",
  "log",
+ "migrator",
  "paths",
  "pretty_assertions",
  "release_channel",
