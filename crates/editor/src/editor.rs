@@ -190,6 +190,9 @@ pub const CODE_ACTIONS_DEBOUNCE_TIMEOUT: Duration = Duration::from_millis(250);
 pub(crate) const FORMAT_TIMEOUT: Duration = Duration::from_secs(2);
 pub(crate) const SCROLL_CENTER_TOP_BOTTOM_DEBOUNCE_TIMEOUT: Duration = Duration::from_secs(1);
 
+pub(crate) const INLINE_COMPLETION_REQUIRES_MODIFIER_KEY_CONTEXT: &str =
+    "inline_completion_requires_modifier";
+
 pub fn render_parsed_markdown(
     element_id: impl Into<ElementId>,
     parsed: &language::ParsedMarkdown,
@@ -1527,7 +1530,7 @@ impl Editor {
             key_context.add("inline_completion");
 
             if showing_completions || self.inline_completion_requires_modifier(cx) {
-                key_context.add("inline_completion_requires_modifier");
+                key_context.add(INLINE_COMPLETION_REQUIRES_MODIFIER_KEY_CONTEXT);
             }
         }
 

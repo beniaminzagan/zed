@@ -1,8 +1,8 @@
-use std::rc::Rc;
+use std::{any::TypeId, rc::Rc, sync::LazyLock};
 
 use crate::{settings_store::parse_json_with_comments, SettingsAssets};
 use anyhow::anyhow;
-use collections::{HashMap, IndexMap};
+use collections::{BTreeMap, HashMap, IndexMap};
 use gpui::{
     Action, ActionBuildError, App, InvalidKeystrokeError, KeyBinding, KeyBindingContextPredicate,
     NoAction, SharedString, KEYSTROKE_PARSE_EXPECTED_MESSAGE,
@@ -16,6 +16,25 @@ use serde::Deserialize;
 use serde_json::Value;
 use std::fmt::Write;
 use util::{asset_str, markdown::MarkdownString};
+
+pub trait KeyBindingValidator: Send + Sync {
+    fn action_type_id(&self) -> TypeId;
+    fn validate(&self, binding: &KeyBinding) -> Result<(), MarkdownString>;
+}
+
+pub struct KeyBindingValidatorRegistration(pub fn() -> Box<dyn KeyBindingValidator>);
+
+inventory::collect!(KeyBindingValidatorRegistration);
+
+pub(crate) static KEY_BINDING_VALIDATORS: LazyLock<BTreeMap<TypeId, Box<dyn KeyBindingValidator>>> =
+    LazyLock::new(|| {
+        let mut validators = BTreeMap::new();
+        for validator_registration in inventory::iter::<KeyBindingValidatorRegistration> {
+            let validator = validator_registration.0();
+            validators.insert(validator.action_type_id(), validator);
+        }
+        validators
+    });
 
 // Note that the doc comments on these are shown by json-language-server when editing the keymap, so
 // they should be considered user-facing documentation. Documentation is not handled well with
@@ -249,9 +268,16 @@ impl KeymapFile {
                             key_bindings.push(key_binding);
                         }
                         Err(err) => {
+                            let mut lines = err.lines();
+                            let mut indented_err = lines.next().unwrap().to_string();
+                            for line in lines {
+                                indented_err.push_str("  ");
+                                indented_err.push_str(line);
+                                indented_err.push_str("\n");
+                            }
                             write!(
                                 section_errors,
-                                "\n\n - In binding {}, {err}",
+                                "\n\n- In binding {}, {indented_err}",
                                 inline_code_string(keystrokes),
                             )
                             .unwrap();
@@ -357,13 +383,24 @@ impl KeymapFile {
             },
         };
 
-        match KeyBinding::load(keystrokes, action, context, key_equivalents) {
-            Ok(binding) => Ok(binding),
-            Err(InvalidKeystrokeError { keystroke }) => Err(format!(
-                "invalid keystroke {}. {}",
-                inline_code_string(&keystroke),
-                KEYSTROKE_PARSE_EXPECTED_MESSAGE
-            )),
+        let key_binding = match KeyBinding::load(keystrokes, action, context, key_equivalents) {
+            Ok(key_binding) => key_binding,
+            Err(InvalidKeystrokeError { keystroke }) => {
+                return Err(format!(
+                    "invalid keystroke {}. {}",
+                    inline_code_string(&keystroke),
+                    KEYSTROKE_PARSE_EXPECTED_MESSAGE
+                ))
+            }
+        };
+
+        if let Some(validator) = KEY_BINDING_VALIDATORS.get(&key_binding.action().type_id()) {
+            match validator.validate(&key_binding) {
+                Ok(()) => Ok(key_binding),
+                Err(error) => Err(error.0),
+            }
+        } else {
+            Ok(key_binding)
         }
     }
 
